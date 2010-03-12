@@ -1,0 +1,62 @@
+*PPD-Adobe: "4.3"
+*FormatVersion: "4.3"
+*FileVersion: "1.3"
+*LanguageVersion: English
+*LanguageEncoding: ISOLatin1
+*PCFileName: "prp085iiit.ppd"
+*Product: "(ESP Ghostscript)"
+*Product: "(GPL Ghostscript)"
+*Manufacturer: "Tysso"
+*ModelName: "Tysso PRP-085IIIT"
+*ShortNickName: "PRP-085IIIT"
+*NickName: "PRP-085IIIT, 1.3"
+*PSVersion: "(3010.000) 81504"
+*PSVersion: "(3010.000) 860"
+*LanguageLevel: "3"
+*ColorDevice: False
+*DefaultColorSpace: Gray
+*FileSystem: False
+*Throughput: "1"
+*LandscapeOrientation: Plus90
+*VariablePaperSize: True
+*TTRasterizer: Type42
+
+*cupsVersion: 1.3
+*cupsModelNumber: 0
+*cupsManualCopies: True
+*cupsFilter: "application/vnd.cups-raster 50 rasterto_prp085iiit"
+*cupsLanguages: "en"
+
+*OpenUI *PageSize/Media Size: PickOne
+*OrderDependency: 10 AnySetup *PageSize
+*DefaultPageSize: 72x210mm
+*PageSize 72x210mm/72x210mm: "<</PageSize[204 595]/ImagingBBox null>>setpagedevice"
+*CloseUI: *PageSize
+
+*OpenUI *PageRegion/Media Size: PickOne
+*OrderDependency: 10 AnySetup *PageRegion
+*DefaultPageRegion: 72x210mm
+*PageRegion 72x210mm/72x210mm: "<</PageSize[204 595]/ImagingBBox null>>setpagedevice"
+*CloseUI: *PageRegion
+
+*DefaultImageableArea: 72x210mm
+*ImageableArea 72x210mm/72x210mm: "0.00 0.00 203.00 594.00"
+*DefaultPaperDimension: 72x210mm
+*PaperDimension 72x210mm/72x210mm: "204.00 595.40"
+*MaxMediaWidth: "203.00"
+*MaxMediaHeight: "86400.00"
+*HWMargins: 0.00 0.00 0.00 0.00
+
+*OpenUI *Resolution: PickOne
+*OrderDependency: 10.0 AnySetup *Resolution
+*DefaultResolution: 203x203dpi
+*Resolution 203x203dpi: "<</HWResolution[203 203]/cupsBitsPerColor 1/cupsRowCount 8/cupsRowFeed 0/cupsRowStep 0/cupsColorSpace 3>>setpagedevice"
+*CloseUI: *Resolution
+
+*OpenUI *CutMedia/Cut page: PickOne
+*DefaultCutMedia: CutMediaNone
+*CutMedia CutMediaNone/No cut: "<</CutMedia 0>>setpagedevice"
+*CutMedia CutMediaPartial/Partial Cut: "<</CutMedia 1>>setpagedevice"
+*CloseUI: *CutMedia
+
+*DefaultFont: Courier
