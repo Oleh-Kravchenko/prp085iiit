@@ -97,54 +97,6 @@ StartPage(const ppd_file_t         *ppd,	/* I - PPD file */
   printf("\033@");
 
    EjectPage = header->Margins[0] || header->Margins[1];
- 
-//  /*
-//   * Set other stuff...
-//   */
-// 
-//   NumPlanes = 1;
-// 
-//   Feed = 0;				/* No blank lines yet */
-// 
-//  /*
-//   * Allocate memory for a line/row of graphics...
-//   */
-// 
-//   if ((Planes[0] = malloc(header->cupsBytesPerLine)) == NULL)
-//   {
-//     fputs("ERROR: Unable to allocate memory!\n", stderr);
-//     exit(1);
-//   }
-// 
-//   for (plane = 1; plane < NumPlanes; plane ++)
-//     Planes[plane] = Planes[0] + plane * header->cupsBytesPerLine / NumPlanes;
-// 
-//   if (header->cupsCompression || DotBytes)
-//   {
-//     if ((CompBuffer = calloc(2, header->cupsWidth)) == NULL)
-//     {
-//       fputs("ERROR: Unable to allocate memory!\n", stderr);
-//       exit(1);
-//     }
-//   }
-//   else
-//     CompBuffer = NULL;
-// 
-//   if (DotBytes)
-//   {
-//     if ((LineBuffers[0] = calloc(DotBytes,
-//                                  header->cupsWidth * (Shingling + 1))) == NULL)
-//     {
-//       fputs("ERROR: Unable to allocate memory!\n", stderr);
-//       exit(1);
-//     }
-// 
-//     LineBuffers[1] = LineBuffers[0] + DotBytes * header->cupsWidth;
-//     DotBit         = 128;
-//     LineCount      = 0;
-//     EvenOffset     = 0;
-//     OddOffset      = 0;
-//   }
 }
 
 
@@ -155,51 +107,7 @@ StartPage(const ppd_file_t         *ppd,	/* I - PPD file */
 void
 EndPage(const cups_page_header2_t *header)	/* I - Page header */
 {
-  int feed, line;
-  
-//   if (DotBytes && header)
-//   {
-//    /*
-//     * Flush remaining graphics as needed...
-//     */
-// 
-//     if (!Shingling)
-//     {
-//       if (DotBit < 128 || EvenOffset)
-//         OutputRows(header, 0);
-//     }
-//     else if (OddOffset > EvenOffset)
-//     {
-//       OutputRows(header, 1);
-//       OutputRows(header, 0);
-//     }
-//     else
-//     {
-//       OutputRows(header, 0);
-//       OutputRows(header, 1);
-//     }
-//   }
-
- /*
-  * Eject the current page...
-  */
-
-  /*if (EjectPage)
-    putchar(12);		/* Form feed */
-
   fflush(stdout);
-
-//  /*
-//   * Free memory...
-//   */
-// 
-//   free(Planes[0]);
-// 
-//   if (CompBuffer)
-//     free(CompBuffer);
-// 
-//   if (DotBytes)
-//     free(LineBuffers[0]);
 }
  
 
@@ -211,6 +119,19 @@ void
 Shutdown(const cups_page_header2_t *header)
 {
 
+  // open cash drawer 1
+  // 1B 70 00 19 FF
+  //
+  // open cash drawer 2
+  // 1B 70 01 19 FF
+
+  // beep
+  // 1B 42 01 07
+  //       CO DE
+  // CO - count
+  // DE - delay in ms
+
+  
     int line, feed = header->cupsHeight / 8;
 
     while(feed > 0)
@@ -471,15 +392,6 @@ main(int  argc,				/* I - Number of command-line arguments */
    	    pwrite("\x1B\x4A\x00", 3);
 	  
 	  free(LineBuffer);
-
-//      if (cupsRasterReadPixels(ras, Planes[0], header.cupsBytesPerLine) < 1)
-//        break;
- 
-	  /*
-	  * Write it to the printer...
-	  */
- 
-//       //OutputLine(&header);
       }
  
     /*
@@ -487,7 +399,7 @@ main(int  argc,				/* I - Number of command-line arguments */
      */
  
      EndPage(&header);
-// 
+
      if (Canceled)
        break;
    }
