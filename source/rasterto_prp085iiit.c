@@ -56,10 +56,10 @@ unsigned char	Line = 0, First = 0, Width = 0;
  * Prototypes...
  */
 
-void	Setup(void);
+void	Setup(ppd_file_t *ppd);
 void	StartPage(const ppd_file_t *ppd, const cups_page_header2_t *header);
 void	EndPage(const cups_page_header2_t *header);
-void	Shutdown(const cups_page_header2_t *header);
+void	Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header);
 
 void	CancelJob(int sig);
 void	CompressData(const unsigned char *line, int length, int plane,
@@ -73,8 +73,46 @@ void	OutputRows(const cups_page_header2_t *header, int row);
  */
 
 void
-Setup(void)
+Setup(ppd_file_t *ppd)
 {
+  ppd_choice_t *choice;
+
+
+
+
+
+
+  
+puts("Setup()");
+
+	choice = ppdFindMarkedChoice(ppd, "CashDrawer");
+
+	printf("0x%p\n", choice);
+	
+	if(choice)
+	{
+		if(strcmp(choice->choice, "CashDrawer1BeforePrint") == 0)
+			printf("CashDrawer1BeforePrint\x1B\x70\x00\x19\xFF");
+		else
+			if(strcmp(choice->choice, "CashDrawer2BeforePrint") == 0)
+				printf("CashDrawer2BeforePrint\x1B\x70\x01\x19\xFF");
+			else
+				if(strcmp(choice->choice, "CashDrawer12BeforePrint") == 0)
+				{
+					printf("CashDrawer12BeforePrint\x1B\x70\x00\x19\xFF");
+					printf("CashDrawer12BeforePrint\x1B\x70\x01\x19\xFF");
+				}
+	}
+
+	if(choice = ppdFindMarkedChoice(ppd, "Beeper"))
+	{
+		if(strcmp(choice->choice, "Beep3t200BeforePrint") == 0)
+			printf("Beep3t200BeforePrint\x1B\x42\x03\x02");
+		else
+			if(strcmp(choice->choice, "Beep3t300BeforePrint") == 0)
+				printf("Beep3t300BeforePrint\x1B\x42\x03\x03");
+	}
+
 }
 
 
@@ -116,7 +154,7 @@ EndPage(const cups_page_header2_t *header)	/* I - Page header */
  */
 
 void
-Shutdown(const cups_page_header2_t *header)
+Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header)
 {
 
   // open cash drawer 1
@@ -155,6 +193,33 @@ Shutdown(const cups_page_header2_t *header)
   */
 
   printf("\033@");
+
+	ppd_choice_t *choice;
+
+	if(choice = ppdFindMarkedChoice(ppd, "CashDrawer"))
+	{
+		if(strcmp(choice->choice, "CashDrawer1AfterPrint") == 0)
+			printf("CashDrawer1AfterPrint\x1B\x70\x00\x19\xFF");
+		else
+			if(strcmp(choice->choice, "CashDrawer2AfterPrint") == 0)
+				printf("CashDrawer2AfterPrint\x1B\x70\x01\x19\xFF");
+			else
+				if(strcmp(choice->choice, "CashDrawer12AfterPrint") == 0)
+				{
+					printf("CashDrawer12AfterPrint\x1B\x70\x00\x19\xFF");
+					printf("CashDrawer12AfterPrint\x1B\x70\x01\x19\xFF");
+				}
+	}
+
+	if(choice = ppdFindMarkedChoice(ppd, "Beeper"))
+	{
+		if(strcmp(choice->choice, "Beep3t200AfterPrint") == 0)
+			printf("Beep3t200AfterPrint\x1B\x42\x03\x02");
+		else
+			if(strcmp(choice->choice, "Beep3t300AfterPrint") == 0)
+				printf("Beep3t300AfterPrint\x1B\x42\x03\x03");
+	}
+
 
   fflush(stdout);
 }
@@ -231,6 +296,9 @@ main(int  argc,				/* I - Number of command-line arguments */
 
   ras = cupsRasterOpen(fd, CUPS_RASTER_READ);
 
+
+
+  
  /*
   * Register a signal handler to eject the current page if the
   * job is cancelled.
@@ -256,8 +324,14 @@ main(int  argc,				/* I - Number of command-line arguments */
  
   ppd = ppdOpenFile(getenv("PPD"));
 
+cups_option_t *options = NULL;
+int num_options = cupsParseOptions(argv[5], 0, &options);
 
-  Setup();
+ppdMarkDefaults(ppd);
+cupsMarkOptions(ppd, num_options, options);
+cupsFreeOptions(num_options, options);
+
+Setup(ppd);
  
   /*
    * Process pages as needed...
@@ -408,7 +482,7 @@ main(int  argc,				/* I - Number of command-line arguments */
    * Shutdown the printer...
    */
  
-   Shutdown(&header);
+   Shutdown(ppd, &header);
  
    ppdClose(ppd);
  
