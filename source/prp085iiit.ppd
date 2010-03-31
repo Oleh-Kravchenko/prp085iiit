@@ -72,7 +72,7 @@
 
 *OpenUI *Beeper/Beeper: PickOne
 *DefaultBeeper: BeeperNone
-*Beeper BeeperNone/Do Not beeps: ""
+*Beeper BeeperNone/Do not beeps: ""
 *Beeper Beep3t200BeforePrint/Beep 3 times for 200 ms before print: ""
 *Beeper Beep3t300BeforePrint/Beep 3 times for 300 ms before print: ""
 *Beeper Beep3t200AfterPrint/Beep 3 times for 200 ms after print: ""
