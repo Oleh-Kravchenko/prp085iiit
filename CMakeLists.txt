@@ -2,6 +2,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT(rasterto_prp085iiit)
 
+INCLUDE(CPack)
+
 ADD_EXECUTABLE(rasterto_prp085iiit
 source/rasterto_prp085iiit.c
 source/prp085iiit.ppd
