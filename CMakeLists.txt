@@ -4,6 +4,8 @@ PROJECT(rasterto_prp085iiit)
 
 INCLUDE(CPack)
 
+ADD_DEFINITIONS(-pedantic -std=gnu99)
+
 ADD_EXECUTABLE(rasterto_prp085iiit
 source/rasterto_prp085iiit.c
 source/prp085iiit.ppd
