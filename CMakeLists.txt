@@ -1,8 +1,9 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT(rasterto_prp085iiit)
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-INCLUDE(CPack)
+FIND_PACKAGE(CUPS REQUIRED)
 
 ADD_DEFINITIONS(-pedantic -std=gnu99)
 
@@ -11,29 +12,31 @@ source/rasterto_prp085iiit.c
 source/prp085iiit.ppd
 )
 
-TARGET_LINK_LIBRARIES(rasterto_prp085iiit cupsimage)
+TARGET_COMPILE_OPTIONS(rasterto_prp085iiit
+PRIVATE
+	-Wno-error=unused-parameter
+	-pedantic
+	-std=gnu99
+	-Wall
+	-Wextra
+	-Werror
+)
 
-IF(NOT CUPS_FILTER_DIR)
-	FIND_PATH(CUPS_FILTER_DIR pstoraster
-	PATHS /usr/libexec/cups/filter/
-	PATHS /usr/lib/cups/filter/
-	PATHS /usr/local/lib/cups/filter/
-	)
-ENDIF(NOT CUPS_FILTER_DIR)
+TARGET_INCLUDE_DIRECTORIES(rasterto_prp085iiit
+PRIVATE
+	${CUPS_INCLUDE_DIR}
+)
 
-IF(NOT CUPS_PPD_DIR)
-	FIND_PATH(CUPS_PPD_DIR zebra.ppd
-	PATHS /usr/share/cups/model/
-	PATHS /usr/local/share/cups/model/
-	)
-ENDIF(NOT CUPS_PPD_DIR)
+TARGET_LINK_LIBRARIES(rasterto_prp085iiit
+PRIVATE
+	${CUPS_IMAGE_LIBS}
+)
 
-INSTALL(TARGETS rasterto_prp085iiit RUNTIME DESTINATION ${CUPS_FILTER_DIR})
-
-INSTALL(FILES source/prp085iiit.ppd DESTINATION ${CUPS_PPD_DIR})
+INSTALL(TARGETS rasterto_prp085iiit RUNTIME DESTINATION "${CUPS_SERVERBIN}/filter")
+INSTALL(FILES source/prp085iiit.ppd DESTINATION "${CUPS_DATADIR}/model")
 
 CONFIGURE_FILE(
-"${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+"${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
 "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 IMMEDIATE @ONLY
 )

@@ -196,7 +196,7 @@ main(int  argc,				/* I - Number of command-line arguments */
   cups_page_header2_t	header;		/* Page header from file */
   ppd_file_t		*ppd;		/* PPD file */
   int			page;		/* Current page */
-  int			y;		/* Current line */
+  unsigned		y;		/* Current line */
 #if defined(HAVE_SIGACTION) && !defined(HAVE_SIGSET)
   struct sigaction action;		/* Actions for POSIX signals */
 #endif /* HAVE_SIGACTION && !HAVE_SIGSET */
