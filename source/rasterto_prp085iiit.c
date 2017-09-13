@@ -5,26 +5,22 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  *
- * (C) 2010 Oleg Kravchenko <oleg@kaa.org.ua>
- */
-
-/*
- * Include necessary headers...
+ * (C) 2017 Oleg Kravchenko <oleg@kaa.org.ua>
  */
 
 #include <cups/cups.h>
 #include <cups/ppd.h>
 #include <cups/raster.h>
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /*
  * Macros...
  */
-#define pwrite(s,n) fwrite((s), 1, (n), stdout)
+#define pwrite(s, n) fwrite((s), 1, (n), stdout)
 
 
 /*
@@ -32,12 +28,12 @@
  */
 unsigned char	*LineBuffer;
 unsigned char	*ZeroBuffer;
-int				EjectPage;		/* Eject the page when done? */
-int				Canceled;		/* Has the current job been canceled? */
+int		EjectPage;		/* Eject the page when done? */
+int		Canceled;		/* Has the current job been canceled? */
 
 unsigned char	Line = 0, First = 0, Width = 0;
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
 /*
  * Prototypes...
@@ -46,74 +42,77 @@ void Setup(ppd_file_t *ppd);
 void StartPage(const ppd_file_t *ppd, const cups_page_header2_t *header);
 void EndPage(const cups_page_header2_t *header);
 void Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header);
-
 void CancelJob(int sig);
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'Setup()' - Prepare the printer for printing.
+/**
+ * @brief Prepare the printer for printing
+ * @param [in] ppd
  */
 void Setup(ppd_file_t *ppd)
 {
 	ppd_choice_t *choice;
 
 	choice = ppdFindMarkedChoice(ppd, "CashDrawer");
-
-	if(choice)
-	{
-		if(strcmp(choice->choice, "CashDrawer1BeforePrint") == 0)
+	if (choice) {
+		if (!strcmp(choice->choice, "CashDrawer1BeforePrint")) {
 			pwrite("\x1B\x70\x00\x19\xFF", 5);
-		else
-			if(strcmp(choice->choice, "CashDrawer2BeforePrint") == 0)
-				pwrite("\x1B\x70\x01\x19\xFF", 5);
-			else
-				if(strcmp(choice->choice, "CashDrawer12BeforePrint") == 0)
-				{
-					pwrite("\x1B\x70\x00\x19\xFF", 5);
-					pwrite("\x1B\x70\x01\x19\xFF", 5);
-				}
+		} else if (!strcmp(choice->choice, "CashDrawer2BeforePrint")) {
+			pwrite("\x1B\x70\x01\x19\xFF", 5);
+		} else if (!strcmp(choice->choice, "CashDrawer12BeforePrint")) {
+			pwrite("\x1B\x70\x00\x19\xFF", 5);
+			pwrite("\x1B\x70\x01\x19\xFF", 5);
+		}
 	}
 
 	choice = ppdFindMarkedChoice(ppd, "Beeper");
-
-	if(choice)
-	{
-		if(strcmp(choice->choice, "Beep3t200BeforePrint") == 0)
+	if (choice) {
+		if (!strcmp(choice->choice, "Beep3t200BeforePrint")) {
 			pwrite("\x1B\x42\x03\x02", 4);
-		else
-			if(strcmp(choice->choice, "Beep3t300BeforePrint") == 0)
-				pwrite("\x1B\x42\x03\x03", 4);
+		} else if (!strcmp(choice->choice, "Beep3t300BeforePrint")) {
+			pwrite("\x1B\x42\x03\x03", 4);
+		}
 	}
 }
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'StartPage()' - Start a page of graphics.
+/**
+ * @brief Start a page of graphics
+ * @param [in] ppd
+ * @param [in] header
  */
 void StartPage(const ppd_file_t *ppd, const cups_page_header2_t *header)
 {
+	(void)ppd;
+	(void)header;
+
 	/*
 	 * Send a reset sequence.
 	 */
 	printf("\033@");
 }
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'EndPage()' - Finish a page of graphics.
+/**
+ * @brief Finish a page of graphics
+ * @param [in] header
  */
 void EndPage(const cups_page_header2_t *header)
 {
+	(void)header;
+
 	fflush(stdout);
 }
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'Shutdown()' - Shutdown the printer.
+/**
+ * @brief Shutdown the printer
+ * @param [in] ppd
+ * @param [in] header
  */
 void Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header)
 {
@@ -121,8 +120,7 @@ void Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header)
 
 	int line, feed = header->cupsHeight / 8;
 
-	while(feed > 0)
-	{
+	while (feed > 0) {
 		line = feed > 200 ? 200 : feed;
 		printf("\x1b\x4a%c", line);
 		feed -= line;
@@ -131,8 +129,9 @@ void Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header)
 	/*
 	 * Cut the paper
 	 */
-	if(header->CutMedia)
+	if (header->CutMedia) {
 		pwrite("\x1d\x56\x00", 3);
+	}
 
 	/*
 	 * Send a reset sequence.
@@ -140,69 +139,65 @@ void Shutdown(ppd_file_t *ppd, const cups_page_header2_t *header)
 	printf("\033@");
 
 	choice = ppdFindMarkedChoice(ppd, "CashDrawer");
-
-	if(choice)
-	{
-		if(strcmp(choice->choice, "CashDrawer1AfterPrint") == 0)
+	if (choice) {
+		if (!strcmp(choice->choice, "CashDrawer1AfterPrint")) {
 			pwrite("\x1B\x70\x00\x19\xFF", 5);
-		else
-			if(strcmp(choice->choice, "CashDrawer2AfterPrint") == 0)
-				pwrite("\x1B\x70\x01\x19\xFF", 5);
-			else
-				if(strcmp(choice->choice, "CashDrawer12AfterPrint") == 0)
-				{
-					pwrite("\x1B\x70\x00\x19\xFF", 5);
-					pwrite("\x1B\x70\x01\x19\xFF", 5);
-				}
+		} else if (!strcmp(choice->choice, "CashDrawer2AfterPrint")) {
+			pwrite("\x1B\x70\x01\x19\xFF", 5);
+		} else if (!strcmp(choice->choice, "CashDrawer12AfterPrint")) {
+			pwrite("\x1B\x70\x00\x19\xFF", 5);
+			pwrite("\x1B\x70\x01\x19\xFF", 5);
+		}
 	}
 
 	choice = ppdFindMarkedChoice(ppd, "Beeper");
-
-	if(choice)
-	{
-		if(strcmp(choice->choice, "Beep3t200AfterPrint") == 0)
+	if (choice) {
+		if (!strcmp(choice->choice, "Beep3t200AfterPrint")) {
 			printf("\x1B\x42\x03\x02");
-		else
-			if(strcmp(choice->choice, "Beep3t300AfterPrint") == 0)
-				printf("\x1B\x42\x03\x03");
+		} else if (!strcmp(choice->choice, "Beep3t300AfterPrint")) {
+			printf("\x1B\x42\x03\x03");
+		}
 	}
 
 	fflush(stdout);
 }
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'CancelJob()' - Cancel the current job...
+/**
+ * @brief Cancel the current job...
+ * @param [in] sig Signal
  */
-void CancelJob(int sig)			/* I - Signal */
+void CancelJob(int sig)
 {
 	(void)sig;
 
 	Canceled = 1;
 }
 
-/*-------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------*/
 
-/*
- * 'main()' - Main entry and processing of driver.
+/**
+ * @brief Main entry and processing of driver
+ * @param [in] argc Number of command-line arguments
+ * @param [in] argv Command-line arguments
+ * @return exit status
  */
-int					/* O - Exit status */
-main(int  argc,				/* I - Number of command-line arguments */
-     char *argv[])			/* I - Command-line arguments */
+int main(int argc, char *argv[])
 {
-  int			fd;		/* File descriptor */
-  cups_raster_t		*ras;		/* Raster stream for printing */
-  cups_page_header2_t	header;		/* Page header from file */
-  ppd_file_t		*ppd;		/* PPD file */
-  int			page;		/* Current page */
-  unsigned		y;		/* Current line */
+	int			fd;	/* File descriptor */
+	cups_raster_t		*ras;	/* Raster stream for printing */
+	cups_page_header2_t	header;	/* Page header from file */
+	ppd_file_t		*ppd;	/* PPD file */
+	int			page;	/* Current page */
+	unsigned		y;	/* Current line */
+
 #if defined(HAVE_SIGACTION) && !defined(HAVE_SIGSET)
-  struct sigaction action;		/* Actions for POSIX signals */
+	struct sigaction action;	/* Actions for POSIX signals */
 #endif /* HAVE_SIGACTION && !HAVE_SIGSET */
 
 	cups_option_t *options = NULL;
-	int num_options = cupsParseOptions(argv[5], 0, &options);
+	int num_options;
 
 	/*
 	 * Make sure status messages are not buffered...
@@ -212,30 +207,30 @@ main(int  argc,				/* I - Number of command-line arguments */
 	/*
 	 * Check command-line...
 	 */
-	if (argc < 6 || argc > 7)
-	{
+	if (argc < 6 || argc > 7) {
 		/*
 		 * We don't have the correct number of arguments; write an error message
 		 * and return.
 		 */
 		fprintf(stderr, "Usage: %s job-id user title copies options [file]\n", argv[0]);
+
 		return (1);
 	}
+
+	num_options = cupsParseOptions(argv[5], 0, &options);
 
 	/*
 	 * Open the page stream...
 	 */
-	if(argc == 7)
-	{
-		if((fd = open(argv[6], O_RDONLY)) == -1)
-		{
+	if (argc == 7) {
+		if ((fd = open(argv[6], O_RDONLY)) == -1) {
 			perror("ERROR: Unable to open raster file - ");
-			sleep(1);
+
 			return (1);
 		}
-	}
-	else
+	} else {
 		fd = 0;
+	}
 
 	ras = cupsRasterOpen(fd, CUPS_RASTER_READ);
 
@@ -275,13 +270,13 @@ main(int  argc,				/* I - Number of command-line arguments */
 	 */
 	page = 0;
 
-	while(cupsRasterReadHeader2(ras, &header))
-	{
+	while (cupsRasterReadHeader2(ras, &header)) {
 		/*
 		 * Write a status message with the page number and number of copies.
 		 */
-		if(Canceled)
+		if (Canceled) {
 			break;
+		}
 
 		page ++;
 
@@ -295,42 +290,42 @@ main(int  argc,				/* I - Number of command-line arguments */
 		/*
 		 * Loop for each line on the page...
 		 */
-		for(y = 0, Line = 1; y < header.cupsHeight; y ++)
-		{
+		for (y = 0, Line = 1; y < header.cupsHeight; y ++) {
 			/*
 			 * Let the user know how far we have progressed...
 			 */
-			if(Canceled)
+			if (Canceled) {
 				break;
+			}
 
-			if((y & 127) == 0)
+			if ((y & 127) == 0) {
 				fprintf(stderr, "INFO: Printing page %d, %d%% complete...\n", page, 100 * y / header.cupsHeight);
+			}
 
 			/*
 			 * Read a line of graphics...
 			 */
-			if(!(LineBuffer = malloc(header.cupsBytesPerLine)))
-			{
+			if (!(LineBuffer = malloc(header.cupsBytesPerLine))) {
 				fputs("ERROR: Unable to allocate memory!\n", stderr);
 				exit(1);
 			}
 
-			if(!(ZeroBuffer = malloc(header.cupsBytesPerLine)))
-			{
+			if (!(ZeroBuffer = malloc(header.cupsBytesPerLine))) {
 				fputs("ERROR: Unable to allocate memory!\n", stderr);
 				exit(1);
 			}
 
 			memset(ZeroBuffer, 0, header.cupsBytesPerLine);
 
-			if(cupsRasterReadPixels(ras, LineBuffer, header.cupsBytesPerLine) < 1)
+			if (cupsRasterReadPixels(ras, LineBuffer, header.cupsBytesPerLine) < 1) {
 				break;
+			}
 
-			if(memcmp(ZeroBuffer, LineBuffer, header.cupsBytesPerLine) == 0 && Line == 1)
+			if (memcmp(ZeroBuffer, LineBuffer, header.cupsBytesPerLine) == 0 && Line == 1) {
 				continue;
+			}
 
-			if(Line == 1)
-			{
+			if (Line == 1) {
 				Line = (header.cupsHeight - y > 24) ? 24 : header.cupsHeight - y;
 				Width = (header.cupsBytesPerLine > 72) ? 72 : header.cupsBytesPerLine;
 
@@ -339,14 +334,15 @@ main(int  argc,				/* I - Number of command-line arguments */
 				pwrite("\x00", 1);
 				pwrite(&Line, 1);
 				pwrite("\x00", 1);
-			}
-			else
+			} else {
 				-- Line;
+			}
 
 			pwrite(LineBuffer, Width);
 
-			if(Line == 1)
+			if (Line == 1) {
 				pwrite("\x1B\x4A\x00", 3);
+			}
 
 			free(LineBuffer);
 		}
@@ -356,8 +352,9 @@ main(int  argc,				/* I - Number of command-line arguments */
 		 */
 		EndPage(&header);
 
-		if(Canceled)
+		if (Canceled) {
 			break;
+		}
 	}
 
 	/*
@@ -372,18 +369,18 @@ main(int  argc,				/* I - Number of command-line arguments */
 	 */
 	cupsRasterClose(ras);
 
-	if (fd != 0)
+	if (fd != 0) {
 		close(fd);
+	}
 
 	/*
 	 * If no pages were printed, send an error message...
 	 */
-	if(page == 0)
+	if (page == 0) {
 		fputs("ERROR: No pages found!\n", stderr);
-	else
+	} else {
 		fputs("INFO: Ready to print.\n", stderr);
+	}
 
 	return (page == 0);
 }
-
-/*-------------------------------------------------------------------------*/
