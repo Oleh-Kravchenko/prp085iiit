@@ -13,6 +13,7 @@ source/prp085iiit.ppd
 TARGET_COMPILE_OPTIONS(rasterto_prp085iiit
 PRIVATE
 	-Wno-error=unused-parameter
+	-Wno-error=deprecated-declarations
 	-pedantic
 	-std=gnu99
 	-Wall
